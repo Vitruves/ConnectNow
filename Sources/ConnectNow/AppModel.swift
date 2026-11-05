@@ -28,6 +28,22 @@ final class AppModel {
     private(set) var appHints: [Hint] = []
     var selectedPortalURL: URL?
     var alert: AlertContent?
+    /// A newer release found on GitHub.
+    private(set) var availableUpdate: AppRelease?
+    private(set) var isCLIInstalled = CommandLineTool.isInstalled
+    /// The portal window opens by itself when a new portal is found. On by default.
+    var opensPortalAutomatically: Bool {
+        get { access(keyPath: \.opensPortalAutomatically); return !UserDefaults.standard.bool(forKey: Self.noAutoOpenKey) }
+        set { withMutation(keyPath: \.opensPortalAutomatically) { UserDefaults.standard.set(!newValue, forKey: Self.noAutoOpenKey) } }
+    }
+    /// Checked once per launch, as soon as a scan says the Internet works. On by default.
+    var checksForUpdates: Bool {
+        get { access(keyPath: \.checksForUpdates); return !UserDefaults.standard.bool(forKey: Self.noUpdateCheckKey) }
+        set {
+            withMutation(keyPath: \.checksForUpdates) { UserDefaults.standard.set(!newValue, forKey: Self.noUpdateCheckKey) }
+            if newValue { checkForUpdatesIfDue() }
+        }
+    }
 
     private static let log = Logger(subsystem: "com.connectnow.app", category: "scan")
     @ObservationIgnored private let scanWork: @Sendable () async -> ScanResult
@@ -40,6 +56,10 @@ final class AppModel {
     @ObservationIgnored private var pendingRescan = false
     @ObservationIgnored private var wakeDelay: Duration?
     @ObservationIgnored private var autoOpenedURL: URL?
+    @ObservationIgnored private var didCheckForUpdates = false
+    private static let noUpdateCheckKey = "updateCheckDisabled"
+    private static let noAutoOpenKey = "portalAutoOpenDisabled"
+    static var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0" }
 
     init(launchURL: URL? = nil) {
         let scanner = NetworkScanner()
@@ -74,7 +94,7 @@ final class AppModel {
     func canPerform(_ action: Hint.Action) -> Bool {
         switch action {
         case .switchDNSToAutomatic: scan.canSwitchDNS && !isSwitchingDNS
-        case .forceHTTPPage: true
+        case .forceHTTPPage, .downloadUpdate: true
         }
     }
 
@@ -140,8 +160,10 @@ final class AppModel {
                 selectedPortalURL = result.portals.first?.url
             }
         }
+        if result.status == .online { checkForUpdatesIfDue() }
         // The portal opens by itself the first time a new top address shows up.
-        if isLive, result.status == .captive, let top = result.portals.first?.url, top != autoOpenedURL {
+        if isLive, opensPortalAutomatically, result.status == .captive,
+           let top = result.portals.first?.url, top != autoOpenedURL {
             autoOpenedURL = top
             show(top)
         }
@@ -178,6 +200,7 @@ final class AppModel {
         switch action {
         case .switchDNSToAutomatic: switchDNSToAutomatic()
         case .forceHTTPPage: forceHTTPPage()
+        case .downloadUpdate: if let url = availableUpdate?.pageURL { NSWorkspace.shared.open(url) }
         }
     }
 
@@ -208,6 +231,78 @@ final class AppModel {
             }
         }
     }
+
+    // MARK: Updates
+
+    /// Automatic check: once per launch, only once online (a portal would just block it), silent on failure.
+    private func checkForUpdatesIfDue() {
+        guard isLive, checksForUpdates, !didCheckForUpdates, scan.status == .online,
+              UpdateCheck.isReleaseVersion(Self.appVersion) else { return }
+        didCheckForUpdates = true
+        Task { await checkForUpdates(reportResult: false) }
+    }
+
+    /// Menu command: says so when up to date or when the check fails.
+    func checkForUpdatesNow() {
+        Task { await checkForUpdates(reportResult: true) }
+    }
+
+    private func checkForUpdates(reportResult: Bool) async {
+        let current = Self.appVersion
+        guard UpdateCheck.isReleaseVersion(current) else {
+            if reportResult { alert = AlertContent(title: "Development build", message: "This build (\(current)) isn't a release: there is nothing to compare it with.") }
+            return
+        }
+        do {
+            guard let release = try await UpdateCheck.newerRelease(than: current) else {
+                if reportResult { alert = AlertContent(title: "ConnectNow is up to date", message: "Version \(current) is the latest.") }
+                return
+            }
+            availableUpdate = release
+            setAppHint(Hint(id: "update-available",
+                            title: "ConnectNow \(release.version) is available",
+                            message: "You have version \(current). Download the new version, then replace the app in Applications.",
+                            severity: .info, action: .downloadUpdate))
+        } catch {
+            Self.log.notice("update check failed: \(error.localizedDescription, privacy: .public)")
+            if reportResult { alert = AlertContent(title: "Couldn't check for updates", message: error.localizedDescription) }
+        }
+    }
+
+    // MARK: Command-line tool
+
+    var canInstallCLI: Bool { CommandLineTool.helperURL != nil }
+
+    func toggleCLI() {
+        let installing = !CommandLineTool.isInstalled
+        do {
+            if installing { try CommandLineTool.install() } else { try CommandLineTool.uninstall() }
+            if installing {
+                let message = "Open a new terminal window and run “connectnow --help”.\n\nIt is a link at \(CommandLineTool.linkURL.path): keep ConnectNow in Applications so the link keeps working."
+                alert = AlertContent(title: "Command-line tool installed", message: message)
+                Task { await warnIfNotInPATH(installedMessage: message) }
+            } else {
+                alert = AlertContent(title: "Command-line tool removed", message: "\(CommandLineTool.linkURL.path) was deleted.")
+            }
+        } catch .cancelled {
+        } catch {
+            alert = AlertContent(title: installing ? "Couldn't install the command-line tool" : "Couldn't remove the command-line tool",
+                                 message: error.localizedDescription)
+        }
+        isCLIInstalled = CommandLineTool.isInstalled
+    }
+
+    /// The link works only if the shell looks in its folder: say so, with the line to add.
+    private func warnIfNotInPATH(installedMessage: String) async {
+        let inPATH = await Task.detached { CommandLineTool.isLinkDirectoryInShellPATH() }.value
+        guard inPATH == false else { return }  // unknown (shell timed out): don't cry wolf
+        let directory = CommandLineTool.linkURL.deletingLastPathComponent().path
+        alert = AlertContent(
+            title: "Installed, but \(directory) isn't in your PATH",
+            message: "Your shell (\(CommandLineTool.loginShell.lastPathComponent)) won't find “connectnow” until \(directory) is in its PATH.\n\n\(CommandLineTool.pathAdvice)\n\nThen open a new terminal window.")
+    }
+
+    func refreshCLIState() { isCLIInstalled = CommandLineTool.isInstalled }
 
     private func restoreDNSIfSwitched() async {
         guard isLive, DNSSwitcher.isSwitched else { return }

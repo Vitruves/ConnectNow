@@ -3,6 +3,9 @@
 
 APP_NAME    := ConnectNow
 PRODUCT     := ConnectNow
+CLI_PRODUCT := ConnectNowCLI
+# Name of the command-line tool, shipped in ConnectNow.app/Contents/Helpers.
+CLI_NAME    := connectnow
 APP         := $(APP_NAME).app
 SCRATCH     ?= .build
 CONFIG      ?= release
@@ -42,13 +45,15 @@ help:
 	@echo "Variables: VERSION=$(VERSION) SCRATCH=$(SCRATCH) CONFIG=$(CONFIG) UNIVERSAL=$(UNIVERSAL)"
 	@echo "Toolchain: $${DEVELOPER_DIR:-$$(xcode-select -p)}"
 
-## Executable for the current architecture.
+## App and command-line tool for the current architecture.
 build:
 	$(SWIFT) build $(SWIFT_FLAGS) --product $(PRODUCT)
+	$(SWIFT) build $(SWIFT_FLAGS) --product $(CLI_PRODUCT)
 
-## Universal executable (arm64 + x86_64). `make universal app` packages this binary.
+## Universal executables (arm64 + x86_64). `make universal app` packages these binaries.
 universal:
 	$(SWIFT) build -c $(CONFIG) --scratch-path $(SCRATCH) --arch arm64 --arch x86_64 --product $(PRODUCT)
+	$(SWIFT) build -c $(CONFIG) --scratch-path $(SCRATCH) --arch arm64 --arch x86_64 --product $(CLI_PRODUCT)
 
 ## Package the binary into ConnectNow.app, inject the version and ad-hoc sign it.
 app: $(if $(filter 1,$(UNIVERSAL)),universal,build)
@@ -58,10 +63,12 @@ _bundle:
 	@set -e; \
 	BIN_DIR="$$($(SWIFT) build $(SWIFT_FLAGS) --show-bin-path)"; \
 	test -x "$$BIN_DIR/$(PRODUCT)" || { echo "Binary not found: $$BIN_DIR/$(PRODUCT)"; exit 1; }; \
+	test -x "$$BIN_DIR/$(CLI_PRODUCT)" || { echo "Binary not found: $$BIN_DIR/$(CLI_PRODUCT)"; exit 1; }; \
 	echo "Packaging $(APP) $(VERSION) ($(BUILD_NUMBER)) from $$BIN_DIR"; \
 	rm -rf "$(APP)"; \
-	mkdir -p "$(APP)/Contents/MacOS" "$(APP)/Contents/Resources"; \
+	mkdir -p "$(APP)/Contents/MacOS" "$(APP)/Contents/Resources" "$(APP)/Contents/Helpers"; \
 	cp "$$BIN_DIR/$(PRODUCT)" "$(APP)/Contents/MacOS/$(APP_NAME)"; \
+	cp "$$BIN_DIR/$(CLI_PRODUCT)" "$(APP)/Contents/Helpers/$(CLI_NAME)"; \
 	cp "$(ICON)" "$(APP)/Contents/Resources/AppIcon.icns"; \
 	cp "$(INFO_PLIST)" "$(APP)/Contents/Info.plist"; \
 	plutil -replace CFBundleShortVersionString -string "$(VERSION)" "$(APP)/Contents/Info.plist"; \
@@ -73,7 +80,8 @@ _bundle:
 		ditto "$$b" "$(APP)/Contents/Resources/$$(basename "$$b")"; \
 	done; \
 	plutil -lint "$(APP)/Contents/Info.plist" >/dev/null; \
-	codesign --force --deep --sign "$(SIGN_ID)" --options runtime --timestamp=none "$(APP)"; \
+	codesign --force --sign "$(SIGN_ID)" --options runtime --timestamp=none --identifier com.connectnow.cli "$(APP)/Contents/Helpers/$(CLI_NAME)"; \
+	codesign --force --sign "$(SIGN_ID)" --options runtime --timestamp=none "$(APP)"; \
 	codesign --verify --strict "$(APP)"; \
 	echo "OK: $(APP) ($$(lipo -archs "$(APP)/Contents/MacOS/$(APP_NAME)"))"
 

@@ -32,14 +32,42 @@ You are "connected" to the Wi-Fi, yet no page loads and the login window never a
 
 It rescans when the network changes, every few seconds while you're not online, and every 30 s once connected, so an expired session is caught and the portal reopens.
 
+## Settings
+
+Right-click anywhere in the ConnectNow window:
+
+- **Appearance**: match the system, light or dark.
+- **Accent Color**: the dawn rose of the icon (default), your system accent, or blue, green, purple, orange.
+- **Show Details**, **Open Portal Automatically** (on by default), **Keep Window in Front**.
+- **Rescan Network**, **Copy Details**.
+- **Install Command-Line Tool…** and the update options, described below.
+
+## Command line
+
+Right-click anywhere in the ConnectNow window and choose **Install Command-Line Tool…**: it links `connectnow` into `/usr/local/bin` (asking for your password if needed) and warns you if that folder isn't in your shell's `PATH`, with the line to add. The same menu removes it.
+
+```sh
+connectnow              # scan once: status, portal address, what blocks it
+connectnow -v           # also the interface, DNS and every probe
+connectnow watch        # keep scanning, one line per change (Ctrl-C to stop)
+connectnow open         # open the detected sign-in page in your browser
+connectnow --json       # machine-readable (one object per line with watch)
+```
+
+Colours follow the terminal; force them with `--color always|never` (or `--no-color`), or set `NO_COLOR=1` / `CLICOLOR_FORCE=1` in your shell. `connectnow status` exits with 0 online, 1 portal detected, 2 no Internet access, 3 no network, so scripts can test it. The tool only reads: switching the DNS stays in the app, which restores it.
+
+## Updates
+
+Once per launch, as soon as the Internet works, ConnectNow asks GitHub whether a newer release exists and shows a card with a download link if so. Turn it off, or check right away, from the same right-click menu (or **ConnectNow → Check for Updates…**).
+
 ## Privacy
 
-No account, no telemetry, no third-party server: only the public connectivity probes above and the portal itself are contacted.
+No account, no telemetry: only the public connectivity probes above, the portal itself and, unless you turn it off, the GitHub release check (which sends nothing but the app version) are contacted.
 
 ## Build
 
 ```sh
-make app      # builds ConnectNow.app (Xcode or the Command Line Tools, no need to open Xcode)
+make app      # builds ConnectNow.app, with the connectnow tool in Contents/Helpers (Xcode or the Command Line Tools, no need to open Xcode)
 make test     # runs the tests
 make install  # copies the app to /Applications
 ```

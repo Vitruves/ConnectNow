@@ -44,6 +44,8 @@ jobs:
           make universal app zip VERSION="$VERSION"
           codesign --verify --strict ConnectNow.app
           lipo -archs ConnectNow.app/Contents/MacOS/ConnectNow
+          lipo -archs ConnectNow.app/Contents/Helpers/connectnow
+          ConnectNow.app/Contents/Helpers/connectnow --version
           shasum -a 256 ConnectNow.zip | tee ConnectNow.zip.sha256
 
       - uses: actions/upload-artifact@v4

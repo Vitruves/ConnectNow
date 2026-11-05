@@ -63,7 +63,7 @@ struct DetailsSection: View {
     private var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 14, verticalSpacing: 5) {
-                ForEach(Self.rows(scan), id: \.0) { label, value in
+                ForEach(scan.detailRows, id: \.0) { label, value in
                     GridRow {
                         Text(label).foregroundStyle(.secondary)
                         Text(value).frame(maxWidth: .infinity, alignment: .leading)
@@ -100,24 +100,9 @@ struct DetailsSection: View {
         .background(.quinary, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
-    static func rows(_ scan: ScanResult) -> [(String, String)] {
-        var rows: [(String, String)] = []
-        let interface = scan.interface.map { scan.isWiFi ? "\($0) (Wi-Fi)" : $0 }
-        rows.append(("Interface", interface ?? "—"))
-        if let primary = scan.defaultInterface, primary != scan.interface {
-            rows.append(("Priority", primary))
-        }
-        if let service = scan.service { rows.append(("Service", service)) }
-        rows.append(("Gateway", scan.gateway ?? "—"))
-        rows.append(("DNS", scan.dnsServers.isEmpty ? "—" : scan.dnsServers.joined(separator: ", ")))
-        if !scan.manualDNS.isEmpty { rows.append(("Manual DNS", scan.manualDNS.joined(separator: ", "))) }
-        if scan.usedDNSFallback { rows.append(("Fallback", "Found using the hotspot's DNS")) }
-        return rows
-    }
-
     static func report(_ scan: ScanResult) -> String {
         var lines = ["ConnectNow — \(scan.status.title)"]
-        lines += rows(scan).map { "\($0.0): \($0.1)" }
+        lines += scan.detailRows.map { "\($0.0): \($0.1)" }
         lines += scan.probes.map { "\($0.name): \($0.detail)" + ($0.latency.map { " (\($0.millisecondsText))" } ?? "") }
         lines += scan.portals.map { "Portal: \($0.url.absoluteString) [\($0.source)]" }
         return lines.joined(separator: "\n")

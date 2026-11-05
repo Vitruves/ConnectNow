@@ -10,6 +10,33 @@ public enum NetworkStatus: String, Sendable, Hashable {
     case scanning   // initial state, before the first scan
 }
 
+extension NetworkStatus {
+    public var title: String {
+        switch self {
+        case .online: "You're connected"
+        case .captive: "Portal detected"
+        case .offline: "No Internet access"
+        case .noNetwork: "No network"
+        case .scanning: "Scanning network…"
+        }
+    }
+
+    public var subtitle: String {
+        switch self {
+        case .online: "The Internet is responding normally."
+        case .captive: "This network wants you to sign in."
+        case .offline: "The network isn't answering any probe."
+        case .noNetwork: "This Mac isn't connected to any network."
+        case .scanning: "Looking for the sign-in page"
+        }
+    }
+}
+
+extension Duration {
+    /// "42 ms", as shown in the probe list.
+    public var millisecondsText: String { "\(Int((self / .milliseconds(1)).rounded())) ms" }
+}
+
 public enum PortalSource: Sendable, Hashable, CustomStringConvertible {
     case announced            // DHCP option 114 / RFC 8908
     case probe(String)        // probe name (Apple, Google…)
@@ -52,7 +79,7 @@ public struct ProbeResult: Sendable, Hashable, Identifiable {
 /// Advice shown to the user. Text is ready to display.
 public struct Hint: Sendable, Hashable, Identifiable {
     public enum Severity: Sendable, Hashable { case info, warning }
-    public enum Action: Sendable, Hashable { case switchDNSToAutomatic, forceHTTPPage }
+    public enum Action: Sendable, Hashable { case switchDNSToAutomatic, forceHTTPPage, downloadUpdate }
     public let id: String          // stable identifier ("vpn-active", "manual-dns"…)
     public let title: String       // short sentence
     public let message: String     // explanation
@@ -81,4 +108,22 @@ public struct ScanResult: Sendable, Hashable {
 
     /// The "Switch DNS to Automatic" action makes sense.
     public var canSwitchDNS: Bool { status != .online && !manualDNS.isEmpty && service != nil }
+}
+
+extension ScanResult {
+    /// Labelled technical details (interface, gateway, DNS…), in display order.
+    public var detailRows: [(String, String)] {
+        var rows: [(String, String)] = []
+        let shown = interface.map { isWiFi ? "\($0) (Wi-Fi)" : $0 }
+        rows.append(("Interface", shown ?? "—"))
+        if let primary = defaultInterface, primary != interface {
+            rows.append(("Priority", primary))
+        }
+        if let service { rows.append(("Service", service)) }
+        rows.append(("Gateway", gateway ?? "—"))
+        rows.append(("DNS", dnsServers.isEmpty ? "—" : dnsServers.joined(separator: ", ")))
+        if !manualDNS.isEmpty { rows.append(("Manual DNS", manualDNS.joined(separator: ", "))) }
+        if usedDNSFallback { rows.append(("Fallback", "Found using the hotspot's DNS")) }
+        return rows
+    }
 }

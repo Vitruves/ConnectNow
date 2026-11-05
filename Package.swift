@@ -10,6 +10,9 @@ let package = Package(
         .target(name: "ConnectNowCore"),
         // Application SwiftUI ; emballée en .app par le Makefile.
         .executableTarget(name: "ConnectNow", dependencies: ["ConnectNowCore"]),
+        // Outil `connectnow` ; embarqué dans ConnectNow.app/Contents/Helpers par le Makefile.
+        .executableTarget(name: "ConnectNowCLI", dependencies: ["ConnectNowCore"]),
         .testTarget(name: "ConnectNowCoreTests", dependencies: ["ConnectNowCore"]),
+        .testTarget(name: "ConnectNowCLITests", dependencies: ["ConnectNowCLI"]),
     ]
 )

@@ -11,6 +11,65 @@ extension Color {
     static let gold = Color(red: 0xFF / 255, green: 0xC5 / 255, blue: 0x6E / 255)
 }
 
+/// Window appearance chosen from the right-click menu.
+enum Appearance: String, CaseIterable, Identifiable {
+    case system, light, dark
+    static let storageKey = "appearance"
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .system: "Match System"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+
+    /// Applies to every window of the app.
+    @MainActor func apply() {
+        var choice = self
+        #if DEBUG
+        // Demo screenshots: CONNECTNOW_APPEARANCE=dark|light wins over the saved choice.
+        if let forced = ProcessInfo.processInfo.environment["CONNECTNOW_APPEARANCE"] { choice = forced == "dark" ? .dark : .light }
+        #endif
+        NSApp.appearance = switch choice {
+        case .system: nil
+        case .light: NSAppearance(named: .aqua)
+        case .dark: NSAppearance(named: .darkAqua)
+        }
+    }
+}
+
+/// Colour of buttons, selection and the portal loading bar, chosen from the right-click menu.
+enum Accent: String, CaseIterable, Identifiable {
+    case dawn, system, blue, green, purple, orange
+    static let storageKey = "accent"
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .dawn: "Dawn (Default)"
+        case .system: "System Accent"
+        case .blue: "Blue"
+        case .green: "Green"
+        case .purple: "Purple"
+        case .orange: "Orange"
+        }
+    }
+
+    /// nil: the accent colour set in System Settings.
+    var color: Color? {
+        switch self {
+        case .dawn: .rose
+        case .system: nil
+        case .blue: .blue
+        case .green: .green
+        case .purple: .purple
+        case .orange: .orange
+        }
+    }
+}
+
 enum Brand {
     /// Icon shown in the header (and in the Dock when running outside a bundle).
     @MainActor static let icon: NSImage = {
@@ -32,26 +91,6 @@ enum Brand {
 }
 
 extension NetworkStatus {
-    var title: String {
-        switch self {
-        case .online: "You're connected"
-        case .captive: "Portal detected"
-        case .offline: "No Internet access"
-        case .noNetwork: "No network"
-        case .scanning: "Scanning network…"
-        }
-    }
-
-    var subtitle: String {
-        switch self {
-        case .online: "The Internet is responding normally."
-        case .captive: "This network wants you to sign in."
-        case .offline: "The network isn't answering any probe."
-        case .noNetwork: "This Mac isn't connected to any network."
-        case .scanning: "Looking for the sign-in page"
-        }
-    }
-
     var symbol: String {
         switch self {
         case .online: "checkmark"
@@ -117,12 +156,9 @@ extension Hint.Action {
         switch self {
         case .switchDNSToAutomatic: "Switch DNS to automatic"
         case .forceHTTPPage: "Force an HTTP page"
+        case .downloadUpdate: "Download"
         }
     }
-}
-
-extension Duration {
-    var millisecondsText: String { "\(Int((self / .milliseconds(1)).rounded())) ms" }
 }
 
 extension URL {

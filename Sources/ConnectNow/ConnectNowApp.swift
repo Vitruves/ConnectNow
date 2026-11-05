@@ -25,8 +25,10 @@ struct ConnectNowApp: App {
 /// Separate view so that observation tracks the request and the gateway.
 private struct PortalWindowContent: View {
     let model: AppModel
+    @AppStorage(Accent.storageKey) private var accent = Accent.dawn
     var body: some View {
         PortalBrowserView(request: model.portalRequest, trustedGateway: model.scan.gateway)
+            .tint(accent.color)
     }
 }
 
@@ -35,6 +37,10 @@ private struct MainCommands: Commands {
 
     var body: some Commands {
         // No "New Window": a single main window. Disabled items let the portal window use the same keys.
+        CommandGroup(after: .appInfo) {
+            Button("Check for Updates…") { model?.checkForUpdatesNow() }
+                .disabled(model == nil)
+        }
         CommandGroup(replacing: .newItem) {
             Button("Rescan network") { model?.rescan() }
                 .keyboardShortcut("r")
@@ -65,10 +71,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #if DEBUG
         // Demo screenshots: come forward even when launched from a background shell.
         if DemoData.requested != nil { NSApp.perform(NSSelectorFromString("activateIgnoringOtherApps:"), with: true) }
-        if let name = ProcessInfo.processInfo.environment["CONNECTNOW_APPEARANCE"] {
-            NSApp.appearance = NSAppearance(named: name == "dark" ? .darkAqua : .aqua)
-        }
         #endif
+        (UserDefaults.standard.string(forKey: Appearance.storageKey).flatMap(Appearance.init) ?? .system).apply()
         model.start()
     }
 

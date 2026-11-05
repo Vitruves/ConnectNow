@@ -69,7 +69,6 @@ struct PortalSection: View {
                 .transition(.opacity)
             }
         }
-        .tint(.rose)
     }
 }
 
