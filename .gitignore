@@ -1,0 +1,19 @@
+# SwiftPM / Xcode
+.build/
+.swiftpm/
+DerivedData/
+*.xcodeproj/
+*.xcworkspace/
+
+# Build products
+*.app
+*.zip
+*.zip.sha256
+
+# Editors and macOS
+.vscode/
+.idea/
+.DS_Store
+
+# Archive of the previous Go version (not published)
+.old/

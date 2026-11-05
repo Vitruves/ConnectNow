@@ -1,0 +1,66 @@
+name: CI
+
+# Every push and pull request: test and build the app.
+# Every v* tag (e.g. `git tag v1.0.0 && git push --tags`): also publish a release with ConnectNow.zip,
+# which the README links to through releases/latest/download/ConnectNow.zip.
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select latest stable Xcode
+        run: |
+          XCODE="$(ls -d /Applications/Xcode_*.app | grep -viE 'beta|rc' | sort -V | tail -1)"
+          echo "Xcode: $XCODE"
+          echo "DEVELOPER_DIR=$XCODE/Contents/Developer" >> "$GITHUB_ENV"
+
+      - name: Version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then V="${GITHUB_REF_NAME#v}"; else V="0.0.0-${GITHUB_SHA::7}"; fi
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+
+      - name: Test
+        run: make test
+
+      - name: Build universal app
+        run: |
+          make universal app zip VERSION="$VERSION"
+          codesign --verify --strict ConnectNow.app
+          lipo -archs ConnectNow.app/Contents/MacOS/ConnectNow
+          shasum -a 256 ConnectNow.zip | tee ConnectNow.zip.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ConnectNow-${{ env.VERSION }}
+          path: ConnectNow.zip
+          if-no-files-found: error
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ConnectNow ${{ env.VERSION }}
+          files: |
+            ConnectNow.zip
+            ConnectNow.zip.sha256
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          body: |
+            Universal app (Apple Silicon + Intel), macOS 14 or later. Not notarized: on first launch, right-click the app and choose **Open**.
