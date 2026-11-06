@@ -1,35 +1,35 @@
 <!doctype html>
-<!-- Source of docs/og.png, the 1200x630 image shown when the site is shared. Render it with scripts/make-og.sh. -->
+<!-- Source of docs/og.png, the 1200x630 image shown when the site is shared. Render it with `make og`. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600&display=block" rel="stylesheet">
 <style>
   html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
   body {
     position: relative;
-    font-family: "Bricolage Grotesque", sans-serif;
-    color: #fff;
+    font-family: "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: #eeeef0;
     background:
-      radial-gradient(55% 75% at 78% 105%, rgba(255, 212, 138, .55), rgba(255, 138, 92, .15) 45%, transparent 70%),
-      linear-gradient(28deg, #1E2160 0%, #4A2A78 36%, #C2486A 66%, #F07A55 86%, #FFC56E 100%);
+      radial-gradient(380px 300px at 80% 30%, rgba(255, 197, 110, .16), transparent 70%),
+      radial-gradient(560px 420px at 78% 40%, rgba(224, 88, 126, .16), transparent 70%),
+      radial-gradient(800px 500px at 20% 0%, rgba(122, 79, 192, .12), transparent 70%),
+      #08090b;
   }
-  .copy { position: absolute; left: 80px; top: 72px; width: 640px; }
-  .brand { display: flex; align-items: center; gap: 18px; font-size: 34px; font-weight: 700; letter-spacing: -0.01em; }
-  .brand img { width: 72px; height: 72px; }
-  h1 {
-    margin: 64px 0 0;
-    font-size: 76px;
-    line-height: 1.0;
-    letter-spacing: -0.035em;
-    font-weight: 800;
-    font-variation-settings: "opsz" 96;
+  .copy { position: absolute; left: 80px; top: 76px; width: 620px; }
+  .brand { display: flex; align-items: center; gap: 18px; font-size: 32px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand img { width: 68px; height: 68px; filter: drop-shadow(0 8px 24px rgba(240, 122, 85, .35)); }
+  h1 { margin: 58px 0 0; font-size: 64px; line-height: 1.04; letter-spacing: -0.045em; font-weight: 800; }
+  .dawn {
+    background: linear-gradient(92deg, #E0587E 5%, #F07A55 50%, #FFC56E 95%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  .foot { position: absolute; left: 80px; bottom: 64px; font-size: 26px; color: rgba(255, 255, 255, .82); }
+  .foot { position: absolute; left: 80px; bottom: 64px; font: 600 18px/1 "JetBrains Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: #F07A55; }
   .shot {
     position: absolute; right: 72px; top: 92px; width: 370px;
-    border-radius: 24px 24px 0 0; overflow: hidden;
-    box-shadow: 0 30px 80px rgba(20, 10, 60, .55), 0 0 0 1px rgba(255, 255, 255, .2);
+    border-radius: 20px 20px 0 0; overflow: hidden;
+    box-shadow: 0 0 0 1px #2a2e36, 0 30px 90px rgba(0, 0, 0, .7);
   }
   .shot img { display: block; width: 100%; }
 </style>
@@ -37,9 +37,9 @@
 <body>
   <div class="copy">
     <div class="brand"><img src="../docs/icon.png" alt="">ConnectNow</div>
-    <h1>Mac struggling to connect to public Wi-Fi? Here’s the fix.</h1>
+    <h1>Mac struggling to connect to public <span style="white-space: nowrap">Wi-Fi?</span> <span class="dawn">Here’s the fix.</span></h1>
   </div>
-  <div class="foot">Free and open source, for macOS 14 or later</div>
+  <div class="foot">Free · Open source · macOS 14+</div>
   <div class="shot"><img src="../docs/screenshot.png" alt=""></div>
 </body>
 </html>
