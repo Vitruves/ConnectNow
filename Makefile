@@ -36,12 +36,12 @@ ifeq ($(UNIVERSAL),1)
 SWIFT_FLAGS  += --arch arm64 --arch x86_64
 endif
 
-.PHONY: all build universal app _bundle run test zip install icon clean help
+.PHONY: all build universal app _bundle run test zip install icon og clean help
 
 all: app
 
 help:
-	@echo "Targets: build universal app run test zip install icon clean"
+	@echo "Targets: build universal app run test zip install icon og clean"
 	@echo "Variables: VERSION=$(VERSION) SCRATCH=$(SCRATCH) CONFIG=$(CONFIG) UNIVERSAL=$(UNIVERSAL)"
 	@echo "Toolchain: $${DEVELOPER_DIR:-$$(xcode-select -p)}"
 
@@ -107,6 +107,10 @@ install: app
 ## Optional: the committed PNG/icns are used by default. Needs python3 and rsvg-convert (brew install librsvg).
 icon:
 	./scripts/make-icon.sh
+
+## Regenerate docs/og.png, the image shown when the website is shared, from scripts/og.html. Needs Google Chrome.
+og:
+	./scripts/make-og.sh
 
 clean:
 	rm -rf "$(APP)" $(APP_NAME)*.zip

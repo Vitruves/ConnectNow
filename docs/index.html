@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ConnectNow for Mac</title>
+<meta name="description" content="Mac struggling to connect to public Wi-Fi? ConnectNow finds the login page macOS doesn't show, tells you what's blocking it and fixes it when it can. Free and open source.">
+<meta name="theme-color" content="#4A2A78">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="canonical" href="https://vitruves.github.io/ConnectNow/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ConnectNow">
+<meta property="og:title" content="ConnectNow for Mac">
+<meta property="og:description" content="Mac struggling to connect to public Wi-Fi? Here’s the fix. Free and open source.">
+<meta property="og:url" content="https://vitruves.github.io/ConnectNow/">
+<meta property="og:image" content="https://vitruves.github.io/ConnectNow/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ConnectNow: Mac struggling to connect to public Wi-Fi? Here’s the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ConnectNow for Mac">
+<meta name="twitter:description" content="Mac struggling to connect to public Wi-Fi? Here’s the fix. Free and open source.">
+<meta name="twitter:image" content="https://vitruves.github.io/ConnectNow/og.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --night: #1E2160;
+    --violet: #4A2A78;
+    --rose: #C2486A;
+    --coral: #F07A55;
+    --gold: #FFC56E;
+    --glow: #FFF4DC;
+
+    --bg: #F6F5FA;
+    --ink: #1E2160;
+    --muted: #5B5B7E;
+    --line: #DEDCEB;
+    --code-bg: #1E2160;
+    --code-ink: #F3EEFF;
+    --link: #A8335A;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15173F;
+      --ink: #EEEAF8;
+      --muted: #A9A6C8;
+      --line: #2E3068;
+      --code-bg: #0F1133;
+      --code-ink: #F3EEFF;
+      --link: #FF9C7E;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-optical-sizing: auto;
+    font-size: 18px;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 3px; }
+  a:focus-visible, .button:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero: the icon's dawn sky, the open door glowing at the bottom. */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    background:
+      radial-gradient(60% 70% at 72% 100%, rgba(255, 212, 138, .45), rgba(255, 138, 92, .12) 45%, transparent 70%),
+      linear-gradient(28deg, var(--night) 0%, var(--violet) 36%, var(--rose) 66%, var(--coral) 86%, var(--gold) 100%);
+    padding: 28px 0 0;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+    font-weight: 700; font-size: 20px; letter-spacing: -0.01em;
+    color: #fff; text-decoration: none;
+  }
+  .brand img { width: 40px; height: 40px; }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 48px;
+    align-items: end;
+    margin-top: 56px;
+  }
+  .hero-copy { padding-bottom: 88px; }
+  h1 {
+    margin: 0;
+    font-size: clamp(40px, 6vw, 68px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+    font-variation-settings: "opsz" 96;
+    text-wrap: balance;
+  }
+  .lede {
+    margin: 24px 0 0;
+    max-width: 30em;
+    font-size: 20px;
+    color: rgba(255, 255, 255, .88);
+  }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; margin-top: 36px; }
+  .button {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 15px 26px;
+    border-radius: 999px;
+    background: var(--glow);
+    color: var(--night);
+    font-weight: 700; font-size: 18px;
+    text-decoration: none;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .5), 0 10px 40px rgba(255, 197, 110, .45);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .button:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(255, 255, 255, .7), 0 14px 48px rgba(255, 197, 110, .6); }
+  .button svg { width: 18px; height: 18px; }
+  .hero .secondary { color: #fff; font-weight: 600; }
+  .fine { margin: 18px 0 0; font-size: 15px; color: rgba(255, 255, 255, .72); max-width: 34em; }
+
+  .shot {
+    justify-self: center;
+    width: min(100%, 400px);
+    margin-bottom: -2px;
+  }
+  .shot img {
+    display: block; width: 100%; height: auto;
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 30px 80px rgba(20, 10, 60, .55), 0 0 0 1px rgba(255, 255, 255, .18);
+    /* Only the top of the window rises out of the dawn; the rest is cut by the page below. */
+    aspect-ratio: 1;
+    object-fit: cover;
+    object-position: top;
+  }
+
+  /* Body */
+  section { padding: 88px 0 0; }
+  h2 {
+    margin: 0 0 20px;
+    font-size: clamp(28px, 3.4vw, 38px);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    font-weight: 750;
+    font-variation-settings: "opsz" 60;
+    max-width: 22em;
+  }
+  p { margin: 0 0 16px; max-width: 36em; }
+  .muted { color: var(--muted); }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; }
+  .causes { list-style: none; margin: 8px 0 0; padding: 0; }
+  .causes li { padding: 16px 0; border-top: 1px solid var(--line); }
+  .causes li:last-child { border-bottom: 1px solid var(--line); }
+  .causes strong { display: block; font-weight: 650; }
+  .causes span { color: var(--muted); font-size: 16px; }
+
+  .does { display: grid; grid-template-columns: repeat(2, 1fr); gap: 36px 56px; margin-top: 12px; }
+  .does h3 { margin: 0 0 6px; font-size: 21px; letter-spacing: -0.01em; font-weight: 700; }
+  .does p { margin: 0; color: var(--muted); font-size: 17px; }
+  .does .dot {
+    display: block; width: 12px; height: 12px; border-radius: 50%; margin-bottom: 14px;
+    background: linear-gradient(135deg, var(--rose), var(--gold));
+    box-shadow: 0 0 14px rgba(255, 197, 110, .7);
+  }
+
+  pre {
+    margin: 20px 0 0;
+    padding: 22px 24px;
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: 14px;
+    overflow-x: auto;
+    font: 15px/1.7 ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  pre .c { color: #9C98C9; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .9em; }
+
+  .closing {
+    margin-top: 104px;
+    padding: 72px 0;
+    color: #fff;
+    background: linear-gradient(28deg, var(--night) 0%, var(--violet) 45%, var(--rose) 85%, var(--coral) 100%);
+  }
+  .closing h2 { max-width: none; }
+  .closing p { color: rgba(255, 255, 255, .82); }
+  footer { padding: 28px 0 40px; font-size: 15px; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+
+  @media (max-width: 820px) {
+    body { font-size: 17px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 8px; margin-top: 40px; }
+    .hero-copy { padding-bottom: 40px; }
+    .lede { font-size: 18px; }
+    .shot { width: min(100%, 340px); }
+    .split, .does { grid-template-columns: 1fr; gap: 32px; }
+    section { padding-top: 64px; }
+    .closing { margin-top: 80px; padding: 56px 0; }
+  }
+  @media (max-width: 480px) {
+    .wrap { padding: 0 16px; }
+    pre { font-size: 13px; padding: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .button { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <a class="brand" href="https://vitruves.github.io/ConnectNow/"><img src="icon.png" alt="" width="40" height="40">ConnectNow</a>
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <h1>Mac struggling to connect to public Wi-Fi? Here’s the fix.</h1>
+        <p class="lede">Hotel, train station, café, airport: you're connected, but nothing loads and the login page never shows up. ConnectNow finds it and opens it.</p>
+        <div class="actions">
+          <a class="button" href="https://github.com/Vitruves/ConnectNow/releases/latest/download/ConnectNow.zip">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v10M5.5 8.5 10 13l4.5-4.5M4 17h12"/></svg>
+            Download for Mac
+          </a>
+          <a class="secondary" href="https://github.com/Vitruves/ConnectNow">Source on GitHub</a>
+        </div>
+        <p class="fine">Free and open source. macOS 14 or later, Apple Silicon and Intel. The app isn't notarized: the first time, right-click it and choose Open.</p>
+      </div>
+      <div class="shot">
+        <img src="screenshot.png" width="880" height="880" alt="ConnectNow window: “Portal detected, this network wants you to sign in”, with the login page address and an Open portal button.">
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="wrap split">
+      <div>
+        <h2>Why the login page doesn't show up</h2>
+        <p>macOS only opens the Wi-Fi login window when its own check gets redirected by the network. Plenty of ordinary settings stop that from happening, and then you're stuck: connected, but offline.</p>
+        <p class="muted">ConnectNow looks for the page in other ways, so it works even when macOS gives up.</p>
+      </div>
+      <ul class="causes">
+        <li><strong>A VPN or iCloud Private Relay</strong><span>Your traffic leaves through the tunnel, so the hotspot never gets to redirect it.</span></li>
+        <li><strong>A firewall, ad blocker or custom DNS</strong><span>Something on your Mac filters the very requests the network needs to see.</span></li>
+        <li><strong>A web proxy or another connection</strong><span>Ethernet or your iPhone's hotspot takes priority over the Wi-Fi.</span></li>
+        <li><strong>A picky portal</strong><span>Some networks let Apple's check through and block everything else.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>What ConnectNow does</h2>
+      <div class="does">
+        <div><span class="dot"></span><h3>Finds the page</h3><p>It checks the same addresses Apple, Google, Firefox and Microsoft use, asks the network directly, and goes around your VPN when it has to.</p></div>
+        <div><span class="dot"></span><h3>Opens it</h3><p>The login page opens in its own window, with the real address always visible. Nothing is kept once you leave the network.</p></div>
+        <div><span class="dot"></span><h3>Tells you what's wrong</h3><p>VPN, proxy, private Wi-Fi address, a filter running in the background: you see what's in the way and what to do about it.</p></div>
+        <div><span class="dot"></span><h3>Fixes the usual suspect</h3><p>When the cause can be fixed for you, one click does it. Your settings come back as soon as you're online.</p></div>
+        <div><span class="dot"></span><h3>Keeps watch</h3><p>It rescans when the network changes and notices when your session expires, so the login page comes back on its own.</p></div>
+        <div><span class="dot"></span><h3>Stays out of your business</h3><p>No account, no tracking. It only contacts the connectivity checks, the login page, and GitHub to look for updates.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Also in the terminal</h2>
+      <p>Right-click in the window and choose Install Command-Line Tool. Then:</p>
+<pre><code>connectnow          <span class="c"># status, login page address, what's blocking it</span>
+connectnow watch    <span class="c"># one line each time something changes</span>
+connectnow open     <span class="c"># open the login page in your browser</span>
+connectnow --json   <span class="c"># for scripts</span></code></pre>
+    </div>
+  </section>
+
+  <div class="closing">
+    <div class="wrap">
+      <h2>Keep it in your Applications folder for the next trip.</h2>
+      <p>Open it whenever a network won't let you in.</p>
+      <div class="actions">
+        <a class="button" href="https://github.com/Vitruves/ConnectNow/releases/latest/download/ConnectNow.zip">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v10M5.5 8.5 10 13l4.5-4.5M4 17h12"/></svg>
+          Download for Mac
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>ConnectNow is free software under the MIT license.</span>
+    <a href="https://github.com/Vitruves/ConnectNow">github.com/Vitruves/ConnectNow</a>
+  </div>
+</footer>
+
+</body>
+</html>
